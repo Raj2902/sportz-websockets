@@ -7,9 +7,7 @@
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio",
-    "demo": "node src/crud-demo.js"
+    "db:migrate": "drizzle-kit migrate"
   },
   "keywords": [],
   "author": "",
@@ -20,7 +18,8 @@
     "dotenv": "^17.3.1",
     "drizzle-orm": "^0.45.1",
     "express": "^5.2.1",
-    "pg": "^8.18.0"
+    "pg": "^8.18.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/pg": "^8.16.0",
