@@ -3,10 +3,10 @@ import arcjet, { slidingWindow, detectBot, shield } from "@arcjet/node";
 const arcjetKey = process.env.ARCJET_KEY;
 const arcjetMode = process.env.ARCJET_MODE === "DRY_RUN" ? "DRY_RUN" : "LIVE";
 
-if (!arcjetKey) throw new Error("ARCJET_KEY enviroment variable is missing");
+if (!arcjetKey) throw new Error("ARCJET_KEY environment variable is missing");
 
 export const httpArcjet = arcjet({
-  key: process.env.ARCJET_KEY,
+  key: arcjetKey,
   rules: [
     shield({ mode: arcjetMode }),
     detectBot({
@@ -22,7 +22,7 @@ export const httpArcjet = arcjet({
 });
 
 export const wsArcjet = arcjet({
-  key: process.env.ARCJET_KEY,
+  key: arcjetKey,
   rules: [
     shield({ mode: arcjetMode }),
     detectBot({
@@ -39,8 +39,6 @@ export const wsArcjet = arcjet({
 
 export function securityMiddleware() {
   return async (req, res, next) => {
-    if (!httpArcjet) return next();
-
     try {
       const decision = await httpArcjet.protect(req);
 

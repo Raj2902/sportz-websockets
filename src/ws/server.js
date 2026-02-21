@@ -16,7 +16,6 @@ function broadcast(wss, payload) {
 export function attachWebSocketServer(server) {
   const wss = new WebSocketServer({
     noServer: true,
-    path: "/ws",
     maxPayload: 1024 * 1024,
   });
 
@@ -43,28 +42,34 @@ export function attachWebSocketServer(server) {
 
   //upgrade the server to socket + security with arcjet
   server.on("upgrade", async (req, socket, head) => {
-    if (wsArcjet) {
-      try {
-        const decision = await wsArcjet.protect(req);
+    // Only handle upgrades to /ws path
+    const { pathname } = new URL(req.url, `http://${req.headers.host}`);
+    if (pathname !== "/ws") {
+      socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
+      socket.destroy();
+      return;
+    }
 
-        if (decision.isDenied()) {
-          const statusCode = decision.reason.isRateLimit() ? 429 : 403;
+    try {
+      const decision = await wsArcjet.protect(req);
 
-          socket.write(
-            `HTTP/1.1 ${statusCode} ${
-              statusCode === 429 ? "Too Many Requests" : "Forbidden"
-            }\r\n\r\n`,
-          );
+      if (decision.isDenied()) {
+        const statusCode = decision.reason.isRateLimit() ? 429 : 403;
 
-          socket.destroy();
-          return;
-        }
-      } catch (e) {
-        console.error("WS upgrade security error", e);
-        socket.write("HTTP/1.1 500 Internal Server Error\r\n\r\n");
+        socket.write(
+          `HTTP/1.1 ${statusCode} ${
+            statusCode === 429 ? "Too Many Requests" : "Forbidden"
+          }\r\n\r\n`,
+        );
+
         socket.destroy();
         return;
       }
+    } catch (e) {
+      console.error("WS upgrade security error", e);
+      socket.write("HTTP/1.1 500 Internal Server Error\r\n\r\n");
+      socket.destroy();
+      return;
     }
 
     // If allowed → upgrade connection
