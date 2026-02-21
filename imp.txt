@@ -1,0 +1,20 @@
+Test the arcjet via the below commands :
+1)For the server - to test the bot detection and rate limiting.
+run the below command in command prompt insure the server is running.
+
+for /L %i in (1,1,60) do curl -s -o NUL -w "%{http_code}\n" http://localhost:8000/matches
+
+expectation it will give the error 403 repeatedly and then stops.
+you can check the arcjet dashboard bots are detected
+
+2)Now lets test the server for the rate limit.
+comment the bots rules and run the above command in the cmd again.
+This time you will get error code as 429 too many request check the arcjet dashboard
+
+3)Test your socket via the code block below in any browsers console.
+
+for(let i=0;i<10;i++){ 
+  const ws=new WebSocket("ws://localhost:8000/ws");
+  ws.onopen=()=>console.log(`Socket ${i} opened`);
+  ws.onclose=(e)=>console.log(`Socket ${i} closed ${e.code} ${e.reason}`);
+}
